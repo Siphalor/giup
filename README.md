@@ -1,3 +1,3 @@
-# GIUP - Git Iterative Update and Publish
+# GIUP - Git Interactive Update and Publish
 
 
