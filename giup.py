@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import sys
 
@@ -13,10 +14,30 @@ colorama.init()
 
 
 async def main():
-    args = sys.argv
-    args.pop(0)
-    config = await BuildConfig.read()
-    await run(config)
+    parser = argparse.ArgumentParser(
+        prog="GIUP",
+        description="Git Interactive Update and Publish - "
+                    "Interactively hierarchically merge, update and publish your projects."
+    )
+    parser.add_argument(
+        "build_config",
+        type=str,
+        nargs="?",
+        default=".giup",
+        help="The build configuration to use"
+    )
+    parser.add_argument(
+        "-f", "--fail",
+        action="store_true",
+        help="Quit the program on first error"
+    )
+    args = parser.parse_args()
+    try:
+        config: BuildConfig = await BuildConfig.read(args.build_config)
+        config.fail_on_error = args.fail
+        await run(config)
+    except lib.util.ParseError as error:
+        cprint("Failed to parse build config file:\n" + str(error), color="red", file=sys.stderr)
 
 
 async def run(config: BuildConfig):

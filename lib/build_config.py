@@ -13,6 +13,7 @@ from lib.command import Command
 class BuildConfig:
     _merge_paths: Iterable[List[str]]
     _commands: List[Command]
+    _fail_on_error: bool = False
 
     def __init__(self):
         pass
@@ -93,6 +94,14 @@ class BuildConfig:
     @property
     def merge_paths(self):
         return self._merge_paths
+
+    @property
+    def fail_on_error(self) -> bool:
+        return self._fail_on_error
+
+    @fail_on_error.setter
+    def fail_on_error(self, value: bool):
+        self._fail_on_error = value
 
 
 class BuildConfigParseError(util.ParseError):
