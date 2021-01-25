@@ -41,15 +41,14 @@ async def main():
 
 
 async def run(config: Project):
+    original_branch = await lib.git.get_current_branch()
     i = 0
     for merge_path in config.merge_paths:
         cprint("> Following merge path #" + str(i), color="blue")
         i += 1
         try:
-            await Command(lib.git.switch, merge_path[0],
-                          title="Switching to initial branch \"" + merge_path[0] + "\"").run()
-
             if not merge_path:
+                await Command(lib.git.switch, merge_path[0], "Switching to branch \"" + merge_path[0] + "\"").run()
                 cprint("Merge path is empty, skipping", color="yellow", file=sys.stderr)
 
             elif len(merge_path) == 1:  # singleton path
@@ -72,6 +71,9 @@ async def run(config: Project):
             break
         except BaseException as e:
             cprint("Failed to follow merge path!\n" + str(e), color="red", file=sys.stderr)
+
+    cprint("> Returning to original branch \"" + original_branch + "\"", color="blue")
+    await lib.git.switch(original_branch)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
+import os
 import shlex
 
-from lib.util import async_run_command_result
+from lib.util import async_run_command_result, async_run_command_output
 
 
 class GitError(BaseException):
@@ -20,6 +21,14 @@ async def check_branch_name(branch_name: str) -> bool:
         raise GitBranchError(branch_name)
     else:
         return True
+
+
+async def get_current_branch() -> str:
+    (code, (stdout, stderr)) = await async_run_command_output("git branch --show-current", stderr=False)
+    if code:
+        raise GitBranchError("Unknown")
+    else:
+        return os.fsdecode(stdout).strip()
 
 
 async def switch(branch_name: str):
