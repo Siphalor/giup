@@ -10,7 +10,7 @@ from lib import util
 from lib.command import Command
 
 
-class BuildConfig:
+class Project:
     _merge_paths: Iterable[List[str]]
     _commands: List[Command]
     _fail_on_error: bool = False
@@ -49,31 +49,29 @@ class BuildConfig:
 
     @staticmethod
     async def read(file_name: str = ".giup"):
-        config: BuildConfig = BuildConfig()
+        config: Project = Project()
 
         try:
             config_file = open(file_name)
         except OSError as e:
-            cprint("Build configuration file \"" + file_name + "\" could not be opened!\n"
-                   + str(e), color="red", file=sys.stderr)
-            return
+            raise ProjectParseError("Build configuration file \"" + file_name + "\" failed to load: " + str(e))
         config_json = json.load(config_file)
 
         if "merge-paths" in config_json:
             merge_paths_json = config_json["merge-paths"]
             if type(merge_paths_json) == list:
                 config._merge_paths = \
-                    await asyncio.gather(*[BuildConfig._read_merge_path(path) for path in merge_paths_json])
+                    await asyncio.gather(*[Project._read_merge_path(path) for path in merge_paths_json])
             elif type(merge_paths_json) == str:
-                config._merge_paths = (await BuildConfig._read_merge_path(merge_paths_json))
+                config._merge_paths = (await Project._read_merge_path(merge_paths_json))
             else:
-                raise BuildConfigParseError("Invalid json for merge paths specified:\n" +
-                                            json.dumps(merge_paths_json, indent="\t"))
+                raise ProjectParseError("Invalid json for merge paths specified:\n" +
+                                        json.dumps(merge_paths_json, indent="\t"))
         else:
             config._merge_paths = False
 
         if not config._merge_paths:
-            raise BuildConfigParseError("No valid merge paths found!")
+            raise ProjectParseError("No valid merge paths found!")
 
         if "commands" in config_json:
             commands_json = config_json["commands"]
@@ -87,7 +85,7 @@ class BuildConfig:
             config._commands = False
 
         if not config._commands:
-            raise BuildConfigParseError("No valid commands found!")
+            raise ProjectParseError("No valid commands found!")
 
         return config
 
@@ -104,5 +102,5 @@ class BuildConfig:
         self._fail_on_error = value
 
 
-class BuildConfigParseError(util.ParseError):
+class ProjectParseError(util.ParseError):
     pass

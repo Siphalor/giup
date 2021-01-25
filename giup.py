@@ -7,7 +7,7 @@ from termcolor import cprint
 
 import lib.git
 import lib.util
-from lib.build_config import BuildConfig
+from lib.project import Project
 from lib.command import Command
 
 colorama.init()
@@ -20,11 +20,11 @@ async def main():
                     "Interactively hierarchically merge, update and publish your projects."
     )
     parser.add_argument(
-        "build_config",
+        "project",
         type=str,
         nargs="?",
         default=".giup",
-        help="The build configuration to use"
+        help="The project configuration to use"
     )
     parser.add_argument(
         "-f", "--fail",
@@ -33,14 +33,14 @@ async def main():
     )
     args = parser.parse_args()
     try:
-        config: BuildConfig = await BuildConfig.read(args.build_config)
+        config: Project = await Project.read(args.project)
         config.fail_on_error = args.fail
         await run(config)
     except lib.util.ParseError as error:
-        cprint("Failed to parse build config file:\n" + str(error), color="red", file=sys.stderr)
+        cprint("Failed to parse project configuration file:\n" + str(error), color="red", file=sys.stderr)
 
 
-async def run(config: BuildConfig):
+async def run(config: Project):
     i = 0
     for merge_path in config.merge_paths:
         cprint("> Following merge path #" + str(i), color="blue")
