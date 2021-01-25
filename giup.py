@@ -13,6 +13,9 @@ from lib.command import Command
 colorama.init()
 
 
+VERSION = "0.0.0"
+
+
 async def main():
     parser = argparse.ArgumentParser(
         prog="GIUP",
@@ -24,12 +27,17 @@ async def main():
         type=str,
         nargs="?",
         default=".giup",
-        help="The project configuration to use"
+        help="the project configuration to use"
     )
     parser.add_argument(
         "-f", "--fail",
         action="store_true",
-        help="Quit the program on first error"
+        help="quit the run on first error"
+    )
+    parser.add_argument(
+        "-v", "--version",
+        action="version",
+        version=VERSION
     )
     args = parser.parse_args()
     try:
