@@ -8,7 +8,6 @@ from termcolor import cprint
 import lib.git
 import lib.util
 from lib.project import Project
-from lib.command import Command
 
 colorama.init()
 
@@ -41,48 +40,11 @@ async def main():
     )
     args = parser.parse_args()
     try:
-        config: Project = await Project.read(args.project)
-        config.fail_on_error = args.fail
-        await run(config)
+        project: Project = await Project.read(args.project)
+        project.fail_on_error = args.fail
+        await project.run()
     except lib.util.ParseError as error:
         cprint("Failed to parse project configuration file:\n" + str(error), color="red", file=sys.stderr)
-
-
-async def run(config: Project):
-    original_branch = await lib.git.get_current_branch()
-    i = 0
-    for merge_path in config.merge_paths:
-        cprint("> Following merge path #" + str(i), color="blue")
-        i += 1
-        try:
-            if not merge_path:
-                cprint("Merge path is empty, skipping", color="yellow", file=sys.stderr)
-                continue
-
-            elif len(merge_path) == 1:  # singleton path
-                await Command(lib.git.switch, merge_path[0], "Switching to branch \"" + merge_path[0] + "\"").run()
-                await config.run_commands()
-
-            else:
-                last_branch = merge_path[0]
-                branches = merge_path[1::]
-                for branch in branches:
-                    await Command(lib.git.switch, branch, title="Switching to branch \"" + branch + "\"").run()
-                    await Command(lib.git.merge, last_branch,
-                                  title="Merging parent branch \"" + last_branch + "\"").run()
-                    last_branch = branch
-                    await config.run_commands()
-
-        except lib.util.GiupPathAbort:
-            cprint("Aborting current path!", attrs=["bold"], file=sys.stderr)
-        except lib.util.GiupStop:
-            cprint("Quitting giup (cancelling all further paths)", attrs=["bold"], file=sys.stderr)
-            break
-        except BaseException as e:
-            cprint("Failed to follow merge path!\n" + str(e), color="red", file=sys.stderr)
-
-    cprint("> Returning to original branch \"" + original_branch + "\"", color="blue")
-    await lib.git.switch(original_branch)
 
 
 if __name__ == '__main__':
