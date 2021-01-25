@@ -91,7 +91,7 @@ class Command:
                 cmd,
                 stdout=bool(src.get("stdout", True)),
                 stderr=bool(src.get("stderr", True)),
-                title=(src["title"] if "title" in src else "Running command \"" + src["run"] + "\"")
+                title=(src["title"] if "title" in src else "Running command \"" + cmd + "\"")
             )
         else:
             raise CommandParseError("Invalid command json:\n" + json.dumps(src, indent="\t"))
