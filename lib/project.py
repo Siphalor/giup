@@ -21,7 +21,7 @@ class Project:
 
     async def run_commands(self):
         for command in self._commands:
-            await command.run()
+            await command.run(self.fail_on_error)
 
     async def run(self):
         original_branch = await lib.git.get_current_branch()
@@ -36,16 +36,17 @@ class Project:
 
                 elif len(merge_path) == 1:  # singleton path
                     await Command(lib.git.switch, merge_path[0], title="Switching to branch \"" + merge_path[0] + "\"")\
-                        .run()
+                        .run(self.fail_on_error)
                     await self.run_commands()
 
                 else:
                     last_branch = merge_path[0]
                     branches = merge_path[1::]
                     for branch in branches:
-                        await Command(lib.git.switch, branch, title="Switching to branch \"" + branch + "\"").run()
-                        await Command(lib.git.merge, last_branch,
-                                      title="Merging parent branch \"" + last_branch + "\"").run()
+                        await Command(lib.git.switch, branch, title="Switching to branch \"" + branch + "\"")\
+                            .run(self.fail_on_error)
+                        await Command(lib.git.merge, last_branch, title="Merging parent branch \"" + last_branch + "\"")\
+                            .run(self.fail_on_error)
                         last_branch = branch
                         await self.run_commands()
 
@@ -56,6 +57,8 @@ class Project:
                 break
             except BaseException as e:
                 cprint("Failed to follow merge path!\n" + str(e), color="red", file=sys.stderr)
+                if self.fail_on_error:
+                    return
 
         cprint("> Returning to original branch \"" + original_branch + "\"", color="blue")
         await lib.git.switch(original_branch)

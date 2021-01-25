@@ -25,7 +25,7 @@ class Command:
     async def execute(self):
         await self._fun(*self._args, **self._kwargs)
 
-    async def run(self):
+    async def run(self, fail_on_error: bool = False):
         if self.title is not None:
             cprint("> " + self.title, color="blue")
 
@@ -37,6 +37,8 @@ class Command:
                 return await self.execute()
             except BaseException:
                 cprint("Failed to complete command!", color="red", attrs=["bold"], file=sys.stderr)
+                if fail_on_error:
+                    raise CommandFailError()
                 cprint("Specify action (" + Command._CONTINUATION_TEXT + ")", file=sys.stderr)
                 while True:
                     print("?> ", end="", file=sys.stderr)
@@ -89,4 +91,8 @@ class Command:
 
 
 class CommandParseError(util.ParseError):
+    pass
+
+
+class CommandFailError(BaseException):
     pass
