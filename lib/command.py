@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 from types import coroutine
 from typing import Any, Tuple, Optional
@@ -77,11 +78,17 @@ class Command:
         if type(src) == str:
             return Command(util.async_run_command_result, src, title="Running command \"" + src + "\"")
         elif type(src) == dict:
-            if "run" not in src:
-                raise CommandParseError("No run command found in command definition:\n" + json.dumps(src, indent="\t"))
+            if os.name in src:
+                cmd = src[os.name]
+            else:
+                if "run" not in src:
+                    raise CommandParseError("No run command found in command definition:\n" +
+                                            json.dumps(src, indent="\t"))
+                cmd = src["run"]
+
             return Command(
                 util.async_run_command_result,
-                src["run"],
+                cmd,
                 stdout=bool(src.get("stdout", True)),
                 stderr=bool(src.get("stderr", True)),
                 title=(src["title"] if "title" in src else "Running command \"" + src["run"] + "\"")
