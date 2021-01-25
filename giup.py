@@ -48,10 +48,11 @@ async def run(config: Project):
         i += 1
         try:
             if not merge_path:
-                await Command(lib.git.switch, merge_path[0], "Switching to branch \"" + merge_path[0] + "\"").run()
                 cprint("Merge path is empty, skipping", color="yellow", file=sys.stderr)
+                continue
 
             elif len(merge_path) == 1:  # singleton path
+                await Command(lib.git.switch, merge_path[0], "Switching to branch \"" + merge_path[0] + "\"").run()
                 await config.run_commands()
 
             else:
