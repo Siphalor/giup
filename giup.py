@@ -60,7 +60,7 @@ async def run(config: Project):
                 branches = merge_path[1::]
                 for branch in branches:
                     await Command(lib.git.switch, branch, title="Switching to branch \"" + branch + "\"").run()
-                    await Command(lib.git.merge, branch,
+                    await Command(lib.git.merge, last_branch,
                                   title="Merging parent branch \"" + last_branch + "\"").run()
                     last_branch = branch
                     await config.run_commands()
