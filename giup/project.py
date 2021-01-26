@@ -1,5 +1,3 @@
-# !/usr/bin/env python3
-#
 # Copyright 2021 Siphalor
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# -*- coding: utf-8 -*-
 import asyncio
 import json
 import sys
@@ -20,10 +20,9 @@ from typing import List, Any, Optional, Iterable
 
 from termcolor import cprint
 
-import lib.git
-import lib.util
-from lib import util
-from lib.command import Command
+from . import git
+from . import util
+from .command import Command
 
 
 class Project:
@@ -39,7 +38,7 @@ class Project:
             await command.run(self.fail_on_error)
 
     async def run(self):
-        original_branch = await lib.git.get_current_branch()
+        original_branch = await git.get_current_branch()
         i = 0
         for merge_path in self.merge_paths:
             cprint("> Following merge path #" + str(i), color="blue")
@@ -50,7 +49,7 @@ class Project:
                     continue
 
                 elif len(merge_path) == 1:  # singleton path
-                    await Command(lib.git.switch, merge_path[0], title="Switching to branch \"" + merge_path[0] + "\"")\
+                    await Command(git.switch, merge_path[0], title="Switching to branch \"" + merge_path[0] + "\"")\
                         .run(self.fail_on_error)
                     await self.run_commands()
 
@@ -58,16 +57,16 @@ class Project:
                     last_branch = merge_path[0]
                     branches = merge_path[1::]
                     for branch in branches:
-                        await Command(lib.git.switch, branch, title="Switching to branch \"" + branch + "\"")\
+                        await Command(git.switch, branch, title="Switching to branch \"" + branch + "\"")\
                             .run(self.fail_on_error)
-                        await Command(lib.git.merge, last_branch, title="Merging parent branch \"" + last_branch + "\"")\
+                        await Command(git.merge, last_branch, title="Merging parent branch \"" + last_branch + "\"")\
                             .run(self.fail_on_error)
                         last_branch = branch
                         await self.run_commands()
 
-            except lib.util.GiupPathAbort:
+            except util.GiupPathAbort:
                 cprint("Aborting current path!", attrs=["bold"], file=sys.stderr)
-            except lib.util.GiupStop:
+            except util.GiupStop:
                 cprint("Quitting giup (cancelling all further paths)", attrs=["bold"], file=sys.stderr)
                 break
             except BaseException as e:
@@ -76,7 +75,7 @@ class Project:
                     return
 
         cprint("> Returning to original branch \"" + original_branch + "\"", color="blue")
-        await lib.git.switch(original_branch)
+        await git.switch(original_branch)
 
     @staticmethod
     async def _read_merge_path(path_json: Any) -> Optional[List[str]]:
@@ -95,11 +94,11 @@ class Project:
 
         processes = []
         for branch in branches:
-            processes.append(lib.git.check_branch_name(branch))
+            processes.append(git.check_branch_name(branch))
 
         results = await asyncio.gather(*processes, return_exceptions=True)
         for result in results:
-            if type(result) == lib.git.GitBranchError:
+            if type(result) == git.GitBranchError:
                 cprint("Invalid branch name \"" + result.branch_name + "\"", color="red", file=sys.stderr)
         return branches
 

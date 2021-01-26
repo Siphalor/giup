@@ -1,5 +1,3 @@
-# !/usr/bin/env python3
-#
 # Copyright 2021 Siphalor
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+#
+# -*- coding: utf-8 -*-
 import argparse
 import asyncio
 import sys
@@ -21,17 +20,13 @@ import sys
 import colorama
 from termcolor import cprint
 
-import lib.git
-import lib.util
-from lib.project import Project
+from giup import util, __version__
+from giup.project import Project
 
 colorama.init()
 
 
-VERSION = "0.0.0"
-
-
-async def main():
+def main():
     parser = argparse.ArgumentParser(
         prog="GIUP",
         description="Git Interactive Update and Publish - "
@@ -52,16 +47,17 @@ async def main():
     parser.add_argument(
         "-v", "--version",
         action="version",
-        version=VERSION
+        version=__version__.__version__
     )
     args = parser.parse_args()
     try:
-        project: Project = await Project.read(args.project)
+        event_loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
+        project: Project = event_loop.run_until_complete(Project.read(args.project))
         project.fail_on_error = args.fail
-        await project.run()
-    except lib.util.ParseError as error:
+        event_loop.run_until_complete(project.run())
+    except util.ParseError as error:
         cprint("Failed to parse project configuration file:\n" + str(error), color="red", file=sys.stderr)
 
 
 if __name__ == '__main__':
-    asyncio.get_event_loop().run_until_complete(main())
+    main()

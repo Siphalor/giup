@@ -1,2 +1,2 @@
 pip install licensify
-licensify --files *.py LICENSE_HEADER
+licensify --files giup/*.py --exclude __init__.py HEADER
