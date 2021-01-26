@@ -37,7 +37,7 @@ def main():
         type=str,
         nargs="?",
         default=".giup",
-        help="the project configuration to use"
+        help="the project configuration to use. \".giup\" is the default"
     )
     parser.add_argument(
         "-f", "--fail",
