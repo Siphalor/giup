@@ -100,8 +100,11 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
+    project_urls={
+      'Source': URL,
+      'Issues': URL + '/issues',
+    },
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
-    # py_modules=['giup'],
     entry_points={
         'console_scripts': ['giup=giup.__main__:main'],
     },
@@ -113,11 +116,14 @@ setup(
         # Trove classifiers
         # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
         'License :: OSI Approved :: Apache Software License',
+        'Natural Language :: English',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',
-        'Programming Language :: Python :: Implementation :: PyPy'
+        'Programming Language :: Python :: Implementation :: PyPy',
+        'Topic :: Software Development :: Build Tools',
+        'Topic :: Software Development :: Version Control :: Git',
     ],
     # $ setup.py publish support.
     cmdclass={
