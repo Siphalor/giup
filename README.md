@@ -1,4 +1,10 @@
 # GIUP - Git Interactive Update and Publish
+
+[![PyPI][pypi-image]][pypi-link]
+
+  [pypi-image]: https://img.shields.io/pypi/v/giup.svg
+  [pypi-link]: https://pypi.python.org/pypi/giup
+
 Allows to interactively perform hierarchical merges and run publishing commands in between.
 
 When commands fail the user is given the chance to intervene by rerunning the current command, just continuing, running a custom shell command or stopping the project, or the current merge path.
@@ -30,15 +36,20 @@ Example workflow from one of my Minecraft modding projects:
 }
 ```
 
-This will consecutively merge:
+This consecutively merges:
 
 1. `1.16` to `1.15`
 2. `1.15` to `1.14`
 3. `1.16` to `1.17`
 
-After each merge GIUP will cleanup, build, publish and push the code
+After each merge GIUP cleans up, builds, publishes and pushes the code.
 
-## Specification
+## Getting Started
+To install this project run `pip install giup`. 
+
+To use this for your project create a `.giup` file (as described below) in your project root and run `giup`.
+
+## Project Specification
 By default, the project specification will be read from the `.giup` file in the working directory. The specification should be defined in JSON and uses the following keys:
 
 ### `merge-paths`
