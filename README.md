@@ -64,3 +64,5 @@ Commands are specified as an object or a string, which is a short form for an ob
 The `run` entry should contain a string that will be run as a shell command. You can define overrides for Windows (`nt`) and POSIX (`posix`) shells.
 
 The `title`entry is a string that optionally gets displayed when the command is run. If not defined, the command itself will be displayed before execution.
+
+The `ignore-errors` entry is an optional boolean telling GIUP whether unsuccessful runs of the command should be treated as errors (on by default). This is useful e.g. when trying to delete a file with `rmdir` which might not exist.
