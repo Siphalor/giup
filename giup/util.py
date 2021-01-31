@@ -26,6 +26,11 @@ async def async_run_command_result(cmd: str, stdout: bool = True, stderr: bool =
     return await res.wait()
 
 
+async def async_run_command_expect_success(cmd: str, stdout: bool = True, stderr: bool = True) -> None:
+    if await async_run_command_result(cmd=cmd, stdout=stdout, stderr=stderr):
+        raise RunCommandResultError()
+
+
 async def async_run_command_output(cmd: str, stdout: bool = True, stderr: bool = True)\
         -> Tuple[int, Tuple[bytes, bytes]]:
     res = await asyncio.create_subprocess_shell(
@@ -44,6 +49,10 @@ class ParseError(BaseException):
 
     def __str__(self):
         return self._message
+
+
+class RunCommandResultError(BaseException):
+    pass
 
 
 class GiupStop(BaseException):

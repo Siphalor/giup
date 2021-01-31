@@ -91,7 +91,7 @@ class Command:
     @staticmethod
     def read(src: Any):
         if type(src) == str:
-            return Command(util.async_run_command_result, src, title="Running command \"" + src + "\"")
+            return Command(util.async_run_command_expect_success, src, title="Running command \"" + src + "\"")
         elif type(src) == dict:
             if os.name in src:
                 cmd = src[os.name]
@@ -102,7 +102,7 @@ class Command:
                 cmd = src["run"]
 
             return Command(
-                util.async_run_command_result,
+                util.async_run_command_expect_success,
                 cmd,
                 stdout=bool(src.get("stdout", True)),
                 stderr=bool(src.get("stderr", True)),
