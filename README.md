@@ -24,7 +24,8 @@ Example workflow from one of my Minecraft modding projects:
         {
             "title": "Cleanup build directories",
             "run": "rm -rf build .gradle",
-            "nt": "rmdir /S /Q build & rmdir /S /Q .gradle"
+            "nt": "rmdir /S /Q build & rmdir /S /Q .gradle",
+            "ignore-errors": true
         },
         {
             "title": "Build and publish",
