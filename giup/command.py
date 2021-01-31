@@ -101,8 +101,13 @@ class Command:
                                             json.dumps(src, indent="\t"))
                 cmd = src["run"]
 
+            if "ignore-errors" in src and src["ignore-errors"]:
+                fun = util.async_run_command_result
+            else:
+                fun = util.async_run_command_expect_success
+
             return Command(
-                util.async_run_command_expect_success,
+                fun,
                 cmd,
                 stdout=bool(src.get("stdout", True)),
                 stderr=bool(src.get("stderr", True)),
