@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "GIUP"
+version = "1.0.0"
+description = "Interactively and hierarchically perform git merges across branches and run commands in between."
+authors = ["Siphalor <info@siphalor.de>"]
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/Siphalor/giup"
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Version Control :: Git",
+]
+include = ["README.md", "LICENSE"]
+packages = [{ include = "giup" }]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+termcolor = "^2.3.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

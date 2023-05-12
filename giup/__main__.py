@@ -17,13 +17,10 @@ import argparse
 import asyncio
 import sys
 
-import colorama
 from termcolor import cprint
 
 from giup import util, __version__
 from giup.project import Project
-
-colorama.init()
 
 
 def main():
