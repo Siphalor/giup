@@ -63,20 +63,25 @@ class Command:
                     if inp == "a":
                         raise util.GiupPathAbort()
                     elif inp == "c":
-                        cprint("Skipping current command" if self.title is None else "Skipping " + self.title,
-                               attrs=["bold"], file=sys.stderr)
+                        cprint("> Skipping current command" if self.title is None else f"> Skipping {self.title}",
+                               color="blue", file=sys.stderr)
                         return
                     elif inp == "m":
                         line = input("$ ")
                         await util.async_run_command_result(line)
                         cprint("Choose next action: " + Command._CONTINUATION_TEXT, file=sys.stderr)
                         continue
+                    elif inp.startswith("m "):
+                        _, cmd = inp.split(" ", maxsplit=1)
+                        await util.async_run_command_result(cmd)
+                        cprint("Choose next action: " + Command._CONTINUATION_TEXT, file=sys.stderr)
+                        continue
                     elif inp == "q":
                         raise util.GiupStop()
                     elif inp == "r":
                         rerun = True
-                        cprint("Rerunning current command" if self.title is None else "Rerunning: " + self.title,
-                               attrs=["bold"], file=sys.stderr)
+                        cprint("> Rerunning last command" if self.title is None else f"> Rerunning: {self.title}",
+                               attrs="blue", file=sys.stderr)
                         break
                     else:
                         cprint("Unknown option! (Available actions: " + Command._CONTINUATION_TEXT + ")",
@@ -91,7 +96,8 @@ class Command:
     @staticmethod
     def read(src: Any):
         if type(src) == str:
-            return Command(util.async_run_command_expect_success, src, title="Running command \"" + src + "\"")
+            return Command.create_run(None, src)
+
         elif type(src) == dict:
             if os.name in src:
                 cmd = src[os.name]
@@ -101,20 +107,25 @@ class Command:
                                             json.dumps(src, indent="\t"))
                 cmd = src["run"]
 
-            if "ignore-errors" in src and src["ignore-errors"]:
-                fun = util.async_run_command_result
-            else:
-                fun = util.async_run_command_expect_success
-
-            return Command(
-                fun,
-                cmd,
-                stdout=bool(src.get("stdout", True)),
-                stderr=bool(src.get("stderr", True)),
-                title=(src["title"] if "title" in src else "Running command \"" + cmd + "\"")
+            return Command.create_run(
+                src.get("title", None), cmd,
+                ignore_errors=bool(src.get("ignore-errors", False)),
+                stdout=bool(src.get("stdout")),
+                stderr=bool(src.get("stderr"))
             )
         else:
             raise CommandParseError("Invalid command json:\n" + json.dumps(src, indent="\t"))
+
+    @staticmethod
+    def create_run(title: Optional[str], cmd: str,
+                   ignore_errors: bool = False,
+                   stdout: bool = True, stderr: bool = True):
+        return Command(
+            util.async_run_command_result if ignore_errors else util.async_run_command_expect_success,
+            cmd,
+            stdout=stdout, stderr=stderr,
+            title=(title if title is not None else f"Running command \"{cmd}\"")
+        )
 
 
 class CommandParseError(util.ParseError):

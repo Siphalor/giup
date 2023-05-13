@@ -15,15 +15,17 @@
 # -*- coding: utf-8 -*-
 import argparse
 import asyncio
+import importlib.metadata
 import sys
 
 from termcolor import cprint
 
-from giup import util, __version__
+from giup import util
 from giup.project import Project
+from giup.command import Command
 
 
-def main():
+async def main():
     parser = argparse.ArgumentParser(
         prog="GIUP",
         description="Git Interactive Update and Publish - "
@@ -34,27 +36,49 @@ def main():
         type=str,
         nargs="?",
         default=".giup",
-        help="the project configuration to use. \".giup\" is the default"
+        help="the project configuration to use. \".giup\" is the default",
     )
     parser.add_argument(
         "-f", "--fail",
         action="store_true",
-        help="quit the run on first error"
+        default=False,
+        help="quit the run on first error",
+    )
+    parser.add_argument(
+        "-R", "--run-command",
+        type=str,
+        action="append",
+        default=[],
+        help="Overwrite the config and run these commands instead",
+    )
+    parser.add_argument(
+        "-P", "--merge-path",
+        type=str,
+        action="append",
+        default=[],
+        help="Overwrite the config and follow these merge paths instead",
     )
     parser.add_argument(
         "-v", "--version",
         action="version",
-        version=__version__.__version__
+        version=importlib.metadata.version("giup"),
     )
+
     args = parser.parse_args()
+
     try:
-        event_loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
-        project: Project = event_loop.run_until_complete(Project.read(args.project))
-        project.fail_on_error = args.fail
-        event_loop.run_until_complete(project.run())
+        project: Project = await Project.read(
+            args.project,
+            fail_on_error=args.fail,
+            override_commands=list(map(lambda cmd: Command.create_run(None, cmd), args.run_command)),
+            override_merge_paths=list(map(lambda path: path.split("->"), args.merge_path))
+        )
+
+        await project.run()
+
     except util.ParseError as error:
         cprint("Failed to parse project configuration file:\n" + str(error), color="red", file=sys.stderr)
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())

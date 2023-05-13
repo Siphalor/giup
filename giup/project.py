@@ -16,7 +16,7 @@
 import asyncio
 import json
 import sys
-from typing import List, Any, Optional, Iterable
+from typing import List, Any, Optional
 
 from termcolor import cprint
 
@@ -26,8 +26,8 @@ from .command import Command
 
 
 class Project:
-    _merge_paths: Iterable[List[str]]
-    _commands: List[Command]
+    _merge_paths: List[List[str]] = []
+    _commands: List[Command] = []
     _fail_on_error: bool = False
 
     def __init__(self):
@@ -45,7 +45,7 @@ class Project:
             i += 1
             try:
                 if not merge_path:
-                    cprint("Merge path is empty, skipping", color="yellow", file=sys.stderr)
+                    cprint("> Merge path is empty, skipping", color="yellow", file=sys.stderr)
                     continue
 
                 elif len(merge_path) == 1:  # singleton path
@@ -90,7 +90,7 @@ class Project:
 
         if not branches:
             cprint("Merge path must not be empty", color="red", file=sys.stderr)
-            raise BaseException()
+            raise Exception()
 
         processes = []
         for branch in branches:
@@ -103,8 +103,12 @@ class Project:
         return branches
 
     @staticmethod
-    async def read(file_name: str = ".giup"):
-        config: Project = Project()
+    async def read(file_name: str = ".giup",
+                   override_commands: Optional[List[str]] = None,
+                   override_merge_paths: Optional[List[List[str]]] = None,
+                   fail_on_error: bool = False):
+        project: Project = Project()
+        project._fail_on_error = fail_on_error
 
         try:
             config_file = open(file_name)
@@ -112,49 +116,51 @@ class Project:
             raise ProjectParseError("Build configuration file \"" + file_name + "\" failed to load: " + str(e))
         config_json = json.load(config_file)
 
-        if "merge-paths" in config_json:
-            merge_paths_json = config_json["merge-paths"]
-            if type(merge_paths_json) == list:
-                config._merge_paths = \
-                    await asyncio.gather(*[Project._read_merge_path(path) for path in merge_paths_json])
-            elif type(merge_paths_json) == str:
-                config._merge_paths = (await Project._read_merge_path(merge_paths_json))
-            else:
-                raise ProjectParseError("Invalid json for merge paths specified:\n" +
-                                        json.dumps(merge_paths_json, indent="\t"))
+        if override_merge_paths is not None and len(override_merge_paths) > 0:
+            project._merge_paths = override_merge_paths
         else:
-            config._merge_paths = False
+            if "merge-paths" in config_json:
+                merge_paths_json = config_json["merge-paths"]
+                if type(merge_paths_json) == list:
+                    project._merge_paths = \
+                        await asyncio.gather(*[Project._read_merge_path(path) for path in merge_paths_json])
+                elif type(merge_paths_json) == str:
+                    project._merge_paths = (await Project._read_merge_path(merge_paths_json))
+                else:
+                    raise ProjectParseError("Invalid json for merge paths specified:\n" +
+                                            json.dumps(merge_paths_json, indent="\t"))
 
-        if not config._merge_paths:
+        if len(project._merge_paths) == 0:
             raise ProjectParseError("No valid merge paths found!")
 
-        if "commands" in config_json:
-            commands_json = config_json["commands"]
-            if type(commands_json) == list:
-                config._commands = []
-                for command_json in commands_json:
-                    config._commands.append(Command.read(command_json))
-            else:
-                config._commands = [Command.read(commands_json)]
+        if override_commands is not None and len(override_commands) > 0:
+            project._commands = override_commands
         else:
-            config._commands = False
+            if "commands" in config_json:
+                commands_json = config_json["commands"]
+                if type(commands_json) == list:
+                    project._commands = []
+                    for command_json in commands_json:
+                        project._commands.append(Command.read(command_json))
+                else:
+                    project._commands = [Command.read(commands_json)]
 
-        if not config._commands:
+        if len(project._commands) == 0:
             raise ProjectParseError("No valid commands found!")
 
-        return config
+        return project
 
     @property
     def merge_paths(self):
         return self._merge_paths
 
     @property
+    def commands(self) -> List[str]:
+        return self.commands
+
+    @property
     def fail_on_error(self) -> bool:
         return self._fail_on_error
-
-    @fail_on_error.setter
-    def fail_on_error(self, value: bool):
-        self._fail_on_error = value
 
 
 class ProjectParseError(util.ParseError):
