@@ -101,7 +101,7 @@ class Command:
                     elif action == "rerun":
                         rerun = True
                         cprint("> Rerunning last command" if self.title is None else f"> Rerunning: {self.title}",
-                               attrs="blue", file=sys.stderr)
+                               color="blue", file=sys.stderr)
                         break
 
     @property
