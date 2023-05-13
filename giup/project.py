@@ -112,11 +112,17 @@ class Project:
 
         try:
             config_file = open(file_name)
+            config_json = json.load(config_file)
         except OSError as e:
-            raise ProjectParseError("Build configuration file \"" + file_name + "\" failed to load: " + str(e))
-        config_json = json.load(config_file)
+            msg = f"Couldn't load configuration file \"{file_name}\": {e}"
 
-        if override_merge_paths is not None and len(override_merge_paths) > 0:
+            if override_commands and override_commands:
+                # both mandatory fields are overriden, so we can proceed anyway
+                cprint(msg, color="yellow")
+            else:
+                raise ProjectParseError(msg)
+
+        if override_merge_paths:
             project._merge_paths = override_merge_paths
         else:
             if "merge-paths" in config_json:
@@ -133,7 +139,7 @@ class Project:
         if len(project._merge_paths) == 0:
             raise ProjectParseError("No valid merge paths found!")
 
-        if override_commands is not None and len(override_commands) > 0:
+        if override_commands:
             project._commands = override_commands
         else:
             if "commands" in config_json:
