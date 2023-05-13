@@ -17,6 +17,9 @@ import argparse
 import asyncio
 import importlib.metadata
 import sys
+# Importing the readline module enables input() history
+# noinspection PyUnresolvedReferences
+import readline
 
 from termcolor import cprint
 

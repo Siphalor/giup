@@ -59,8 +59,7 @@ class Command:
                     raise CommandFailError()
                 cprint("Specify action (" + _CONTINUATION_TEXT + ")", file=sys.stderr)
                 while True:
-                    print("?> ", end="", file=sys.stderr)
-                    inp = input()
+                    inp = input("?> ")
                     inp_parts = inp.split(None, 1)
                     inp_action = inp_parts[0]
                     inp_args = None if len(inp_parts) < 2 else inp_parts[1]
