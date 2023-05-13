@@ -16,6 +16,7 @@
 import asyncio
 import json
 import sys
+import traceback
 from typing import List, Any, Optional
 
 from termcolor import cprint
@@ -43,6 +44,7 @@ class Project:
         for merge_path in self.merge_paths:
             cprint(f"> Following merge path #{i}: {' -> '.join(merge_path)}", color="blue")
             i += 1
+            # noinspection PyBroadException
             try:
                 if not merge_path:
                     cprint("> Merge path is empty, skipping", color="yellow", file=sys.stderr)
@@ -69,8 +71,8 @@ class Project:
             except util.GiupStop:
                 cprint("Quitting giup (cancelling all further paths)", attrs=["bold"], file=sys.stderr)
                 break
-            except BaseException as e:
-                cprint("Failed to follow merge path!\n" + str(e), color="red", file=sys.stderr)
+            except BaseException:
+                cprint(f"Failed to follow merge path!\n{traceback.format_exc()}", color="red", file=sys.stderr)
                 if self.fail_on_error:
                     return
 
