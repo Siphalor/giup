@@ -41,7 +41,7 @@ class Project:
         original_branch = await git.get_current_branch()
         i = 0
         for merge_path in self.merge_paths:
-            cprint("> Following merge path #" + str(i), color="blue")
+            cprint(f"> Following merge path #{i}: {' -> '.join(merge_path)}", color="blue")
             i += 1
             try:
                 if not merge_path:
