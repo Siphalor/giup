@@ -95,15 +95,14 @@ class Command:
                         cprint(f"Choose next action: {_CONTINUATION_TEXT}", file=sys.stderr)
                         continue
 
-                    elif inp == "quit":
+                    elif action == "quit":
                         raise util.GiupStop()
 
-                    elif inp == "rerun":
+                    elif action == "rerun":
                         rerun = True
                         cprint("> Rerunning last command" if self.title is None else f"> Rerunning: {self.title}",
                                attrs="blue", file=sys.stderr)
                         break
-                continue
 
     @property
     def title(self) -> Optional[str]:
