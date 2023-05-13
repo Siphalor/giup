@@ -20,6 +20,18 @@ classifiers = [
 include = ["README.md", "LICENSE"]
 packages = [{ include = "giup" }]
 
+[tool.poe.tasks.release]
+shell = """
+version=$(poetry version -s $bump)
+echo New version $version
+poetry build && git commit -am "Version $version" && git push && poetry publish && gh release create v$version --generate-notes
+"""
+[[tool.poe.tasks.release.args]]
+name = "bump"
+help = "type of version bump, see poetry version --help"
+positional = true
+required = true
+
 [tool.poetry.scripts]
 giup = "giup.cli:bootstrap"
 
