@@ -108,6 +108,7 @@ class Project:
     async def read(file_name: str = ".giup",
                    override_commands: Optional[List[str]] = None,
                    override_merge_paths: Optional[List[List[str]]] = None,
+                   disable_commands: bool = False,
                    fail_on_error: bool = False):
         project: Project = Project()
         project._fail_on_error = fail_on_error
@@ -118,7 +119,7 @@ class Project:
         except OSError as e:
             msg = f"Couldn't load configuration file \"{file_name}\": {e}"
 
-            if override_commands and override_commands:
+            if override_commands and (override_commands or disable_commands):
                 # both mandatory fields are overriden, so we can proceed anyway
                 cprint(msg, color="yellow")
             else:
@@ -141,7 +142,9 @@ class Project:
         if len(project._merge_paths) == 0:
             raise ProjectParseError("No valid merge paths found!")
 
-        if override_commands:
+        if disable_commands:
+            project._commands = []
+        elif override_commands:
             project._commands = override_commands
         else:
             if "commands" in config_json:
@@ -152,9 +155,6 @@ class Project:
                         project._commands.append(Command.read(command_json))
                 else:
                     project._commands = [Command.read(commands_json)]
-
-        if len(project._commands) == 0:
-            raise ProjectParseError("No valid commands found!")
 
         return project
 

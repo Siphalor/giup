@@ -66,6 +66,12 @@ async def main():
         help="Overwrite the config and follow these merge paths instead",
     )
     parser.add_argument(
+        "--no-commands",
+        action="store_true",
+        default=False,
+        help="Don't run any commands",
+    )
+    parser.add_argument(
         "-v", "--version",
         action="version",
         version=importlib.metadata.version("giup"),
@@ -76,9 +82,10 @@ async def main():
     try:
         project: Project = await Project.read(
             args.project,
-            fail_on_error=args.fail,
             override_commands=list(map(lambda cmd: Command.create_run(None, cmd), args.run_command)),
-            override_merge_paths=list(map(lambda path: path.split("->"), args.merge_path))
+            override_merge_paths=list(map(lambda path: path.split("->"), args.merge_path)),
+            disable_commands=args.no_commands,
+            fail_on_error=args.fail,
         )
 
         await project.run()
