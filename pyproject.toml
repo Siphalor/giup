@@ -20,6 +20,9 @@ classifiers = [
 include = ["README.md", "LICENSE"]
 packages = [{ include = "giup" }]
 
+[tool.poetry.scripts]
+giup = "giup.cli:bootstrap"
+
 [tool.poetry.dependencies]
 python = "^3.8"
 termcolor = "^2.3.0"

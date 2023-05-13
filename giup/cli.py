@@ -25,6 +25,10 @@ from giup.project import Project
 from giup.command import Command
 
 
+def bootstrap():
+    asyncio.run(main())
+
+
 async def main():
     parser = argparse.ArgumentParser(
         prog="GIUP",
@@ -81,4 +85,4 @@ async def main():
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    bootstrap()
