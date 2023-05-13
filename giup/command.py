@@ -110,8 +110,8 @@ class Command:
             return Command.create_run(
                 src.get("title", None), cmd,
                 ignore_errors=bool(src.get("ignore-errors", False)),
-                stdout=bool(src.get("stdout")),
-                stderr=bool(src.get("stderr"))
+                stdout=bool(src.get("stdout", True)),
+                stderr=bool(src.get("stderr", True))
             )
         else:
             raise CommandParseError("Invalid command json:\n" + json.dumps(src, indent="\t"))
