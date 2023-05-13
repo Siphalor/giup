@@ -23,9 +23,11 @@ from termcolor import cprint
 
 from . import util
 
+_CONTINUATION_TEXT = "a = abort path, c = continue, e = execute command, q = quit, r = rerun"
+_CONTINUATION_ACTIONS = ["abort", "continue", "execute", "quit", "rerun"]
+
 
 class Command:
-    _CONTINUATION_TEXT = "a = abort path, c = continue, m = run command, q = quit, r = rerun"
 
     _fun: coroutine
     _args: Tuple[Any]
@@ -55,38 +57,52 @@ class Command:
                 cprint("Failed to complete command!", color="red", attrs=["bold"], file=sys.stderr)
                 if fail_on_error:
                     raise CommandFailError()
-                cprint("Specify action (" + Command._CONTINUATION_TEXT + ")", file=sys.stderr)
+                cprint("Specify action (" + _CONTINUATION_TEXT + ")", file=sys.stderr)
                 while True:
                     print("?> ", end="", file=sys.stderr)
                     inp = input()
-                    inp = inp[0]
-                    if inp == "a":
+                    inp_parts = inp.split(None, 1)
+                    inp_action = inp_parts[0]
+                    inp_args = None if len(inp_parts) < 2 else inp_parts[1]
+
+                    actions = util.fuzzy_match(inp_action, _CONTINUATION_ACTIONS)
+                    if len(actions) == 0:
+                        cprint(f"Unknown action! (Available actions: {_CONTINUATION_TEXT})", file=sys.stderr)
+                        continue
+                    elif len(actions) > 1:
+                        cprint(f"Multiple actions match the input: {', '.join(actions)}", file=sys.stderr)
+                        continue
+
+                    action = actions[0]
+
+                    if action == "abort":
                         raise util.GiupPathAbort()
-                    elif inp == "c":
+
+                    elif action == "continue":
                         cprint("> Skipping current command" if self.title is None else f"> Skipping {self.title}",
                                color="blue", file=sys.stderr)
                         return
-                    elif inp == "m":
-                        line = input("$ ")
-                        await util.async_run_command_result(line)
-                        cprint("Choose next action: " + Command._CONTINUATION_TEXT, file=sys.stderr)
-                        continue
-                    elif inp.startswith("m "):
-                        _, cmd = inp.split(" ", maxsplit=1)
+
+                    elif action == "execute":
+                        if inp_args is not None:
+                            cmd = inp_args
+                        else:
+                            cmd = input("$ ")
+                        if cmd.isspace():
+                            continue
+
                         await util.async_run_command_result(cmd)
-                        cprint("Choose next action: " + Command._CONTINUATION_TEXT, file=sys.stderr)
+                        cprint(f"Choose next action: {_CONTINUATION_TEXT}", file=sys.stderr)
                         continue
-                    elif inp == "q":
+
+                    elif inp == "quit":
                         raise util.GiupStop()
-                    elif inp == "r":
+
+                    elif inp == "rerun":
                         rerun = True
                         cprint("> Rerunning last command" if self.title is None else f"> Rerunning: {self.title}",
                                attrs="blue", file=sys.stderr)
                         break
-                    else:
-                        cprint("Unknown option! (Available actions: " + Command._CONTINUATION_TEXT + ")",
-                               file=sys.stderr)
-                        continue
                 continue
 
     @property

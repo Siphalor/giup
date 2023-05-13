@@ -14,7 +14,7 @@
 #
 # -*- coding: utf-8 -*-
 import asyncio
-from typing import Tuple
+from typing import Tuple, List
 
 
 async def async_run_command_result(cmd: str, stdout: bool = True, stderr: bool = True) -> int:
@@ -39,6 +39,13 @@ async def async_run_command_output(cmd: str, stdout: bool = True, stderr: bool =
         stderr=(asyncio.subprocess.PIPE if stderr else None)
     )
     return res.returncode, await res.communicate()
+
+
+def fuzzy_match(user_input: str, cases: List[str]) -> List[str]:
+    if user_input in cases:
+        return [user_input]
+
+    return list(filter(lambda case: case.startswith(user_input), cases))
 
 
 class ParseError(BaseException):
