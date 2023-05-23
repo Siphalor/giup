@@ -100,7 +100,10 @@ async def main():
             fail_on_error=args.fail,
         )
 
-        await project.run()
+        await project.run(
+            return_to_original_branch=not args.no_return,
+            edit_commit_message=args.edit_commit_message,
+        )
 
     except util.ParseError as error:
         cprint("Failed to parse project configuration file:\n" + str(error), color="red", file=sys.stderr)
