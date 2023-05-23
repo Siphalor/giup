@@ -38,7 +38,9 @@ class Project:
         for command in self._commands:
             await command.run(self.fail_on_error)
 
-    async def run(self):
+    async def run(self,
+                  return_to_original_branch: bool = True,
+                  edit_commit_message: bool = False):
         original_branch = await git.get_current_branch()
         i = 0
         for merge_path in self.merge_paths:
@@ -61,7 +63,10 @@ class Project:
                     for branch in branches:
                         await Command(git.switch, branch, title="Switching to branch \"" + branch + "\"")\
                             .run(self.fail_on_error)
-                        await Command(git.merge, last_branch, title="Merging parent branch \"" + last_branch + "\"")\
+                        await Command(git.merge,
+                                      last_branch,
+                                      edit_commit_message=edit_commit_message,
+                                      title="Merging parent branch \"" + last_branch + "\"")\
                             .run(self.fail_on_error)
                         last_branch = branch
                         await self.run_commands()
@@ -76,8 +81,9 @@ class Project:
                 if self.fail_on_error:
                     return
 
-        cprint("> Returning to original branch \"" + original_branch + "\"", color="blue")
-        await git.switch(original_branch)
+        if return_to_original_branch:
+            cprint("> Returning to original branch \"" + original_branch + "\"", color="blue")
+            await git.switch(original_branch)
 
     @staticmethod
     async def _read_merge_path(path_json: Any) -> Optional[List[str]]:

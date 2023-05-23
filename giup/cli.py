@@ -72,6 +72,18 @@ async def main():
         help="Don't run any commands",
     )
     parser.add_argument(
+        "--no-return",
+        action="store_true",
+        default=False,
+        help="Don't return to the original branch after running",
+    )
+    parser.add_argument(
+        "-e", "--edit-commit-message",
+        action="store_true",
+        default=False,
+        help="Edit the commit message before committing",
+    )
+    parser.add_argument(
         "-v", "--version",
         action="version",
         version=importlib.metadata.version("giup"),

@@ -51,6 +51,8 @@ async def switch(branch_name: str):
         raise GitBranchError(branch_name)
 
 
-async def merge(branch_name: str):
-    if await async_run_command_result("git merge " + shlex.quote(branch_name)):
+async def merge(branch_name: str, edit_commit_message: bool = False):
+    merge_opts = "" if edit_commit_message else "--no-edit"
+    branch_name = shlex.quote(branch_name)
+    if await async_run_command_result(f"git merge {merge_opts} -- {branch_name}"):
         raise GitBranchError(branch_name)
